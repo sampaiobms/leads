@@ -1,2 +1,2 @@
-# leads
-Teste de Leads
+git clone https://github.com/seu-usuario/dashboard-consolidador.git
+   cd dashboard-consolidador

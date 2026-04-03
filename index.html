@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Consolidador de Excel</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>📊 Dashboard Consolidador de Excel</h1>
+        <p>Faça upload de arquivos Excel para consolidar dados de forma rápida e eficiente.</p>
+    </header>
+
+    <main>
+        <section id="upload-section">
+            <h2>📤 Upload de Arquivos</h2>
+            <div id="drop-zone" class="drop-zone">
+                <p>Arraste e solte os arquivos Excel aqui ou clique para selecionar.</p>
+                <input type="file" id="file-input" multiple accept=".xlsx,.xls,.csv">
+            </div>
+            <ul id="file-list"></ul>
+            <button id="process-btn" disabled>🚀 Processar Consolidação</button>
+        </section>
+
+        <section id="preview-section" class="hidden">
+            <h2>👀 Preview dos Dados</h2>
+            <div id="preview-content"></div>
+        </section>
+
+        <section id="backup-section" class="hidden">
+            <h2>💾 Backup Simulado</h2>
+            <p>Backup dos arquivos originais realizado com sucesso!</p>
+            <button id="download-backup">⬇️ Baixar Backup</button>
+        </section>
+
+        <section id="examples-section">
+            <h2>🧪 Exemplos para Teste</h2>
+            <button id="load-example1">Carregar Exemplo 1 (Vendas)</button>
+            <button id="load-example2">Carregar Exemplo 2 (Inventário)</button>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 Dashboard Consolidador. Protótipo para demonstração.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
