@@ -1,221 +1,343 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IA Captação Oral Unic</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
-        .screen { display: none; }
-        .active { display: block; }
-        /* Login */
-        .login { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #e0f7fa; }
-        .login-form { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        input { display: block; margin: 10px 0; padding: 10px; width: 100%; }
-        button { padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
-        /* Kanban */
-        .kanban { padding: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .hamburger { cursor: pointer; font-size: 24px; }
-        .menu { display: none; position: absolute; background: white; border: 1px solid #ccc; padding: 10px; }
-        .menu.show { display: block; }
-        .columns { display: flex; gap: 20px; }
-        .column { flex: 1; background: #fff; padding: 10px; border-radius: 8px; min-height: 400px; }
-        .column h3 { font-size: 14px; margin-bottom: 10px; }
-        .card { background: #f9f9f9; padding: 10px; margin-bottom: 10px; border-radius: 4px; cursor: move; }
-        .score-bar { width: 100%; height: 10px; background: #ddd; margin: 5px 0; }
-        .score-fill { height: 100%; background: #4caf50; }
-        /* Dashboard */
-        .dashboard { padding: 20px; }
-        .kpi-cards { display: flex; gap: 20px; margin-bottom: 20px; }
-        .kpi-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); flex: 1; text-align: center; }
-        .charts { display: flex; gap: 20px; }
-        .chart { flex: 1; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
-        canvas { max-width: 100%; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            padding: 15px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
+            color: #007bff;
+        }
+        .hamburger {
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+        }
+        .hamburger div {
+            width: 25px;
+            height: 3px;
+            background-color: #333;
+            margin: 3px 0;
+            transition: 0.3s;
+        }
+        .menu {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            padding: 10px;
+            z-index: 101;
+        }
+        .menu.show {
+            display: block;
+        }
+        .menu a {
+            display: block;
+            padding: 10px;
+            text-decoration: none;
+            color: #333;
+            transition: background-color 0.3s;
+        }
+        .menu a:hover {
+            background-color: #f0f0f0;
+        }
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+        .kanban {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 20px 0;
+        }
+        .column {
+            flex: 1;
+            min-width: 250px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 15px;
+        }
+        .column h3 {
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .card {
+            background-color: #fafafa;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: move;
+        }
+        .card.dragging {
+            opacity: 0.5;
+        }
+        .score-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        .score-fill {
+            height: 100%;
+            border-radius: 4px;
+            background-color: #007bff;
+        }
+        .dashboard {
+            padding: 20px;
+        }
+        .kpi-cards {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        .kpi-card {
+            flex: 1;
+            min-width: 200px;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .charts {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .chart {
+            flex: 1;
+            min-width: 300px;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        @media (max-width: 768px) {
+            .kanban {
+                flex-direction: column;
+            }
+            .kpi-cards {
+                flex-direction: column;
+            }
+            .charts {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
-    <div id="login" class="screen active login">
-        <div class="login-form">
-            <h2>Login</h2>
-            <input type="text" placeholder="Usuário" id="username">
-            <input type="password" placeholder="Senha" id="password">
-            <button onclick="showScreen('kanban')">Login</button>
+    <div class="header">
+        <div class="logo">IA Captação Oral Unic</div>
+        <div class="hamburger" onclick="toggleMenu()">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        <div class="menu" id="menu">
+            <a href="#" onclick="showScreen('kanban')">Kanban</a>
+            <a href="#" onclick="showScreen('dashboard')">Dashboard</a>
+            <a href="#" onclick="showScreen('kanban')">Logout</a>
         </div>
     </div>
-    <div id="kanban" class="screen kanban">
-        <div class="header">
-            <div class="hamburger" onclick="toggleMenu()">☰</div>
-            <div id="menu" class="menu">
-                <a href="#" onclick="showScreen('dashboard')">Dashboard</a><br>
-                <a href="#">Configuração</a><br>
-                <a href="#" onclick="showScreen('login')">Logout</a>
+    <div class="container">
+        <div id="kanban" class="screen active">
+            <div class="kanban">
+                <div class="column" id="leads-novos" style="background-color: #E3F2FD;">
+                    <h3>LEADS NOVOS</h3>
+                    <div class="card" draggable="true" data-id="1"><strong>João Silva</strong><br>Serviço: Implantes<br><div class="score-bar"><div class="score-fill" style="width: 85%"></div></div>Score: 85<br>Data: 2023-10-01</div>
+                    <div class="card" draggable="true" data-id="2"><strong>Maria Santos</strong><br>Serviço: Invisalign<br><div class="score-bar"><div class="score-fill" style="width: 70%"></div></div>Score: 70<br>Data: 2023-10-02</div>
+                    <div class="card" draggable="true" data-id="3"><strong>Pedro Costa</strong><br>Serviço: Implantes<br><div class="score-bar"><div class="score-fill" style="width: 90%"></div></div>Score: 90<br>Data: 2023-10-03</div>
+                    <div class="card" draggable="true" data-id="4"><strong>Ana Oliveira</strong><br>Serviço: Clínico<br><div class="score-bar"><div class="score-fill" style="width: 60%"></div></div>Score: 60<br>Data: 2023-10-04</div>
+                    <div class="card" draggable="true" data-id="5"><strong>Carlos Mendes</strong><br>Serviço: Implantes<br><div class="score-bar"><div class="score-fill" style="width: 75%"></div></div>Score: 75<br>Data: 2023-10-05</div>
+                </div>
+                <div class="column" id="em-tratamento" style="background-color: #E8F5E9;">
+                    <h3>EM TRATAMENTO</h3>
+                    <div class="card" draggable="true" data-id="6"><strong>Luiza Ferreira</strong><br>Serviço: Implantes<br><div class="score-bar"><div class="score-fill" style="width: 80%"></div></div>Score: 80<br>Data: 2023-10-06</div>
+                    <div class="card" draggable="true" data-id="7"><strong>Rafael Lima</strong><br>Serviço: Invisalign<br><div class="score-bar"><div class="score-fill" style="width: 65%"></div></div>Score: 65<br>Data: 2023-10-07</div>
+                    <div class="card" draggable="true" data-id="8"><strong>Beatriz Rocha</strong><br>Serviço: Implantes<br><div class="score-bar"><div class="score-fill" style="width: 95%"></div></div>Score: 95<br>Data: 2023-10-08</div>
+                    <div class="card" draggable="true" data-id="9"><strong>Gustavo Alves</strong><br>Serviço: Clínico<br><div class="score-bar"><div class="score-fill" style="width: 55%"></div></div>Score: 55<br>Data: 2023-10-09</div>
+                    <div class="card" draggable="true" data-id="10"><strong>Isabela Pereira</strong><br>Serviço: Implantes<br><div class="score-bar"><div class="score-fill" style="width: 78%"></div></div>Score: 78<br>Data: 2023-10-10</div>
+                </div>
+                <div class="column" id="agendado" style="background-color: #FFFDE7;">
+                    <h3>AGENDADO</h3>
+                    <div class="card" draggable="true" data-id="11"><strong>Felipe Souza</strong><br>Serviço: Implantes<br><div class="score-bar"><div class="score-fill" style="width: 82%"></div></div>Score: 82<br>Data: 2023-10-11</div>
+                    <div class="card" draggable="true" data-id="12"><strong>Camila Nunes</strong><br>Serviço: Invisalign<br><div class="score-bar"><div class="score-fill" style="width: 68%"></div></div>Score: 68<br>Data: 2023-10-12</div>
+                    <div class="card" draggable="true" data-id="13"><strong>Thiago Martins</strong><br>Serviço: Implantes<br><div class="score-bar"><div class="score-fill" style="width: 92%"></div></div>Score: 92<br>Data: 2023-10-13</div>
+                    <div class="card" draggable="true" data-id="14"><strong>Juliana Castro</strong><br>Serviço: Clínico<br><div class="score-bar"><div class="score-fill" style="width: 58%"></div></div>Score: 58<br>Data: 2023-10-14</div>
+                    <div class="card" draggable="true" data-id="15"><strong>Leonardo Barbosa</strong><br>Serviço: Implantes<br><div class="score-bar"><div class="score-fill" style="width: 76%"></div></div>Score: 76<br>Data: 2023-10-15</div>
+                </div>
+                <div class="column" id="faltou" style="background-color: #FFEBEE;">
+                    <h3>FALTOU</h3>
+                    <div class="card" draggable="true" data-id="16"><strong>Patrícia Gomes</strong><br>Serviço: Implantes<br><div class="score-bar"><div class="score-fill" style="width: 84%"></div></div>Score: 84<br>Data: 2023-10-16</div>
+                    <div class="card" draggable="true" data-id="17"><strong>Ricardo Silva</strong><br>Serviço: Invisalign<br><div class="score-bar"><div class="score-fill" style="width: 66%"></div></div>Score: 66<br>Data: 2023-10-17</div>
+                    <div class="card" draggable="true" data-id="18"><strong>Vanessa Dias</strong><br>Serviço: Implantes<br><div class="score-bar"><div class="score-fill" style="width: 94%"></div></div>Score: 94<br>Data: 2023-10-18</div>
+                    <div class="card" draggable="true" data-id="19"><strong>Marcelo Santos</strong><br>Serviço: Clínico<br><div class="score-bar"><div class="score-fill" style="width: 56%"></div></div>Score: 56<br>Data: 2023-10-19</div>
+                    <div class="card" draggable="true" data-id="20"><strong>Aline Costa</strong><br>Serviço: Implantes<br><div class="score-bar"><div class="score-fill" style="width: 74%"></div></div>Score: 74<br>Data: 2023-10-20</div>
+                </div>
+                <div class="column" id="arquivo" style="background-color: #F5F5F5;">
+                    <h3>ARQUIVO</h3>
+                    <div class="card" draggable="true" data-id="21"><strong>Rodrigo Oliveira</strong><br>Serviço: Implantes<br><div class="score-bar"><div class="score-fill" style="width: 86%"></div></div>Score: 86<br>Data: 2023-10-21</div>
+                    <div class="card" draggable="true" data-id="22"><strong>Sofia Mendes</strong><br>Serviço: Invisalign<br><div class="score-bar"><div class="score-fill" style="width: 64%"></div></div>Score: 64<br>Data: 2023-10-22</div>
+                    <div class="card" draggable="true" data-id="23"><strong>Bruno Ferreira</strong><br>Serviço: Implantes<br><div class="score-bar"><div class="score-fill" style="width: 96%"></div></div>Score: 96<br>Data: 2023-10-23</div>
+                    <div class="card" draggable="true" data-id="24"><strong>Laura Lima</strong><br>Serviço: Clínico<br><div class="score-bar"><div class="score-fill" style="width: 54%"></div></div>Score: 54<br>Data: 2023-10-24</div>
+                    <div class="card" draggable="true" data-id="25"><strong>Henrique Rocha</strong><br>Serviço: Implantes<br><div class="score-bar"><div class="score-fill" style="width: 72%"></div></div>Score: 72<br>Data: 2023-10-25</div>
+                </div>
             </div>
-            <h1>Kanban</h1>
         </div>
-        <div class="columns" id="kanban-columns">
-            <div class="column" id="leads-novos" style="background-color: #E3F2FD;">
-                <h3>LEADS NOVOS</h3>
-            </div>
-            <div class="column" id="em-tratamento" style="background-color: #E8F5E9;">
-                <h3>EM TRATAMENTO</h3>
-            </div>
-            <div class="column" id="agendado" style="background-color: #FFFDE7;">
-                <h3>AGENDADO</h3>
-            </div>
-            <div class="column" id="faltou" style="background-color: #FFEBEE;">
-                <h3>FALTOU</h3>
-            </div>
-            <div class="column" id="arquivo" style="background-color: #F5F5F5;">
-                <h3>ARQUIVO</h3>
-            </div>
-        </div>
-    </div>
-    <div id="dashboard" class="screen dashboard">
-        <div class="header">
-            <div class="hamburger" onclick="toggleMenu()">☰</div>
-            <div id="menu" class="menu">
-                <a href="#" onclick="showScreen('kanban')">Kanban</a><br>
-                <a href="#">Configuração</a><br>
-                <a href="#" onclick="showScreen('login')">Logout</a>
-            </div>
+        <div id="dashboard" class="screen">
             <h1>Dashboard de KPIs</h1>
+            <div class="kpi-cards">
+                <div class="kpi-card" style="background-color: #E3F2FD;">
+                    <h3>Total de Leads</h3>
+                    <p>25</p>
+                </div>
+                <div class="kpi-card" style="background-color: #E8F5E9;">
+                    <h3>Taxa de Conversão</h3>
+                    <p>20%</p>
+                </div>
+                <div class="kpi-card" style="background-color: #FFFDE7;">
+                    <h3>Leads Agendados</h3>
+                    <p>5</p>
+                </div>
+                <div class="kpi-card" style="background-color: #FFEBEE;">
+                    <h3>Leads Faltosos</h3>
+                    <p>5</p>
+                </div>
+            </div>
+            <div class="charts">
+                <div class="chart">
+                    <canvas id="pieChart"></canvas>
+                </div>
+                <div class="chart">
+                    <canvas id="barChart"></canvas>
+                </div>
+                <div class="chart">
+                    <canvas id="lineChart"></canvas>
+                </div>
+            </div>
+            <button class="btn" onclick="showScreen('kanban')">Voltar ao Kanban</button>
         </div>
-        <div class="kpi-cards">
-            <div class="kpi-card"><h3>Total de Leads</h3><p>25</p></div>
-            <div class="kpi-card"><h3>Taxa de Conversão</h3><p>20%</p></div>
-            <div class="kpi-card"><h3>Leads Agendados</h3><p>5</p></div>
-            <div class="kpi-card"><h3>Leads Faltosos</h3><p>5</p></div>
-        </div>
-        <div class="charts">
-            <div class="chart"><canvas id="pieChart"></canvas></div>
-            <div class="chart"><canvas id="barChart"></canvas></div>
-            <div class="chart"><canvas id="lineChart"></canvas></div>
-        </div>
-        <button onclick="showScreen('kanban')">Voltar ao Kanban</button>
     </div>
     <script>
-        const leads = [
-            { name: 'João Silva', service: 'Implantes', score: 85, date: '2023-10-01' },
-            { name: 'Maria Oliveira', service: 'Invisalign', score: 92, date: '2023-10-02' },
-            { name: 'Pedro Santos', service: 'Implantes', score: 78, date: '2023-10-03' },
-            { name: 'Ana Costa', service: 'Clínico', score: 65, date: '2023-10-04' },
-            { name: 'Carlos Pereira', service: 'Implantes', score: 88, date: '2023-10-05' },
-            { name: 'Beatriz Lima', service: 'Implantes', score: 95, date: '2023-10-06' },
-            { name: 'Fernando Alves', service: 'Invisalign', score: 70, date: '2023-10-07' },
-            { name: 'Gabriela Rocha', service: 'Implantes', score: 82, date: '2023-09-30' },
-            { name: 'Henrique Mendes', service: 'Implantes', score: 90, date: '2023-09-29' },
-            { name: 'Isabela Nunes', service: 'Clínico', score: 55, date: '2023-09-28' },
-            { name: 'João Pedro', service: 'Implantes', score: 87, date: '2023-09-27' },
-            { name: 'Karla Souza', service: 'Invisalign', score: 93, date: '2023-09-26' },
-            { name: 'Lucas Ferreira', service: 'Implantes', score: 76, date: '2023-09-25' },
-            { name: 'Mariana Dias', service: 'Implantes', score: 89, date: '2023-09-24' },
-            { name: 'Nicolas Gomes', service: 'Implantes', score: 94, date: '2023-09-23' },
-            { name: 'Olivia Barbosa', service: 'Invisalign', score: 68, date: '2023-09-22' },
-            { name: 'Paulo Carvalho', service: 'Implantes', score: 81, date: '2023-09-21' },
-            { name: 'Quintino Ramos', service: 'Implantes', score: 96, date: '2023-09-20' },
-            { name: 'Rosa Teixeira', service: 'Clínico', score: 60, date: '2023-09-19' },
-            { name: 'Sofia Lopes', service: 'Implantes', score: 84, date: '2023-09-18' },
-            { name: 'Tiago Martins', service: 'Implantes', score: 91, date: '2023-09-17' },
-            { name: 'Ursula Vieira', service: 'Invisalign', score: 73, date: '2023-09-16' },
-            { name: 'Vitor Andrade', service: 'Implantes', score: 79, date: '2023-09-15' },
-            { name: 'Wanda Castro', service: 'Implantes', score: 86, date: '2023-09-14' },
-            { name: 'Xavier Pinto', service: 'Implantes', score: 97, date: '2023-09-13' }
-        ];
-        const columns = ['leads-novos', 'em-tratamento', 'agendado', 'faltou', 'arquivo'];
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-        }
         function toggleMenu() {
             document.getElementById('menu').classList.toggle('show');
         }
-        function renderKanban() {
-            columns.forEach((colId, index) => {
-                const col = document.getElementById(colId);
-                const start = index * 5;
-                const end = start + 5;
-                leads.slice(start, end).forEach(lead => {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.draggable = true;
-                    card.innerHTML = `
-                        <strong>${lead.name}</strong><br>
-                        Serviço: ${lead.service}<br>
-                        <div class="score-bar"><div class="score-fill" style="width: ${lead.score}%"></div></div>
-                        Score: ${lead.score}<br>
-                        Data: ${lead.date}
-                    `;
-                    card.addEventListener('dragstart', (e) => {
-                        e.dataTransfer.setData('text/plain', lead.name);
-                    });
-                    col.appendChild(card);
-                });
-                col.addEventListener('dragover', (e) => e.preventDefault());
-                col.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    const leadName = e.dataTransfer.getData('text/plain');
-                    const lead = leads.find(l => l.name === leadName);
-                    if (lead) {
-                        // Simple move: remove from old, add to new
-                        const oldCol = e.target.closest('.column');
-                        const newCol = col;
-                        if (oldCol !== newCol) {
-                            oldCol.querySelector(`[data-name="${leadName}"]`).remove();
-                            const newCard = document.createElement('div');
-                            newCard.className = 'card';
-                            newCard.draggable = true;
-                            newCard.setAttribute('data-name', leadName);
-                            newCard.innerHTML = `
-                                <strong>${lead.name}</strong><br>
-                                Serviço: ${lead.service}<br>
-                                <div class="score-bar"><div class="score-fill" style="width: ${lead.score}%"></div></div>
-                                Score: ${lead.score}<br>
-                                Data: ${lead.date}
-                            `;
-                            newCard.addEventListener('dragstart', (e) => {
-                                e.dataTransfer.setData('text/plain', lead.name);
-                            });
-                            newCol.appendChild(newCard);
-                        }
-                    }
-                });
-            });
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            document.getElementById('menu').classList.remove('show');
         }
-        function renderCharts() {
-            const serviceCounts = { Implantes: 0, Invisalign: 0, Clínico: 0 };
-            leads.forEach(l => serviceCounts[l.service]++);
-            new Chart(document.getElementById('pieChart'), {
-                type: 'pie',
-                data: {
-                    labels: Object.keys(serviceCounts),
-                    datasets: [{ data: Object.values(serviceCounts), backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe'] }]
-                }
-            });
-            const statusCounts = { 'LEADS NOVOS': 5, 'EM TRATAMENTO': 5, 'AGENDADO': 5, 'FALTOU': 5, 'ARQUIVO': 5 };
-            new Chart(document.getElementById('barChart'), {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(statusCounts),
-                    datasets: [{ label: 'Leads', data: Object.values(statusCounts), backgroundColor: '#4bc0c0' }]
-                }
-            });
-            const dailyLeads = {};
-            leads.forEach(l => {
-                dailyLeads[l.date] = (dailyLeads[l.date] || 0) + 1;
-            });
-            new Chart(document.getElementById('lineChart'), {
-                type: 'line',
-                data: {
-                    labels: Object.keys(dailyLeads).sort(),
-                    datasets: [{ label: 'Leads por Dia', data: Object.values(dailyLeads), borderColor: '#ff9f40' }]
-                }
-            });
-        }
-        document.addEventListener('DOMContentLoaded', () => {
-            renderKanban();
-            renderCharts();
+        // Drag and Drop
+        let draggedElement = null;
+        document.addEventListener('dragstart', function(e) {
+            if (e.target.classList.contains('card')) {
+                draggedElement = e.target;
+                e.target.classList.add('dragging');
+            }
+        });
+        document.addEventListener('dragend', function(e) {
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+                draggedElement = null;
+            }
+        });
+        document.addEventListener('dragover', function(e) {
+            e.preventDefault();
+        });
+        document.addEventListener('drop', function(e) {
+            e.preventDefault();
+            if (draggedElement && e.target.classList.contains('column')) {
+                e.target.appendChild(draggedElement);
+            }
+        });
+        // Charts
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Implantes', 'Invisalign', 'Clínico'],
+                datasets: [{
+                    data: [70, 20, 10],
+                    backgroundColor: ['#007bff', '#28a745', '#ffc107']
+                }]
+            }
+        });
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Leads Novos', 'Em Tratamento', 'Agendado', 'Faltou', 'Arquivo'],
+                datasets: [{
+                    label: 'Leads',
+                    data: [5, 5, 5, 5, 5],
+                    backgroundColor: ['#E3F2FD', '#E8F5E9', '#FFFDE7', '#FFEBEE', '#F5F5F5']
+                }]
+            }
+        });
+        const lineCtx = document.getElementById('lineChart').getContext('2d');
+        new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: ['2023-10-19', '2023-10-20', '2023-10-21', '2023-10-22', '2023-10-23', '2023-10-24', '2023-10-25'],
+                datasets: [{
+                    label: 'Leads por Dia',
+                    data: [3, 4, 5, 3, 4, 3, 3],
+                    borderColor: '#007bff',
+                    fill: false
+                }]
+            }
         });
     </script>
 </body>
