@@ -3,49 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Consolidador de Excel</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <title>Plataforma de Captação de Leads</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .login-form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+        .menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #333;
+            color: white;
+            padding: 10px;
+            z-index: 1000;
+        }
+        .hamburger {
+            cursor: pointer;
+        }
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 40px;
+            left: 0;
+            background: white;
+            border: 1px solid #ccc;
+            width: 200px;
+        }
+        .menu-dropdown a {
+            display: block;
+            padding: 10px;
+            text-decoration: none;
+            color: black;
+        }
+        .kanban {
+            display: flex;
+            padding-top: 60px;
+            overflow-x: auto;
+        }
+        .column {
+            flex: 1;
+            min-width: 200px;
+            margin: 10px;
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .card {
+            background: #e9ecef;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: move;
+        }
+        .dashboard {
+            padding-top: 60px;
+            padding: 20px;
+        }
+        .kpi-cards {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .kpi-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            flex: 1;
+            margin: 0 10px;
+        }
+        .charts {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .chart {
+            flex: 1;
+            min-width: 300px;
+            margin: 10px;
+        }
+        @media (max-width: 768px) {
+            .kanban {
+                flex-direction: column;
+            }
+            .kpi-cards {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <header>
-        <h1>📊 Dashboard Consolidador de Excel</h1>
-        <p>Faça upload de arquivos Excel para consolidar dados de forma rápida e eficiente.</p>
-    </header>
-
-    <main>
-        <section id="upload-section">
-            <h2>📤 Upload de Arquivos</h2>
-            <div id="drop-zone" class="drop-zone">
-                <p>Arraste e solte os arquivos Excel aqui ou clique para selecionar.</p>
-                <input type="file" id="file-input" multiple accept=".xlsx,.xls,.csv">
+    <div id="login" class="screen active">
+        <div class="login-container">
+            <form class="login-form" id="loginForm">
+                <h2>Login</h2>
+                <input type="text" id="username" placeholder="Usuário" required>
+                <input type="password" id="password" placeholder="Senha" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+    <div id="kanban" class="screen">
+        <div class="menu">
+            <span class="hamburger" onclick="toggleMenu()">☰ Menu</span>
+            <div class="menu-dropdown" id="menuDropdown">
+                <a href="#" onclick="showDashboard()">Dashboard</a>
+                <a href="#">Configuração</a>
+                <a href="#" onclick="logout()">Logout</a>
             </div>
-            <ul id="file-list"></ul>
-            <button id="process-btn" disabled>🚀 Processar Consolidação</button>
-        </section>
-
-        <section id="preview-section" class="hidden">
-            <h2>👀 Preview dos Dados</h2>
-            <div id="preview-content"></div>
-        </section>
-
-        <section id="backup-section" class="hidden">
-            <h2>💾 Backup Simulado</h2>
-            <p>Backup dos arquivos originais realizado com sucesso!</p>
-            <button id="download-backup">⬇️ Baixar Backup</button>
-        </section>
-
-        <section id="examples-section">
-            <h2>🧪 Exemplos para Teste</h2>
-            <button id="load-example1">Carregar Exemplo 1 (Vendas)</button>
-            <button id="load-example2">Carregar Exemplo 2 (Inventário)</button>
-        </section>
-    </main>
-
-    <footer>
-        <p>&copy; 2023 Dashboard Consolidador. Protótipo para demonstração.</p>
-    </footer>
-
-    <script src="script.js"></script>
+        </div>
+        <div class="kanban" id="kanbanBoard"></div>
+    </div>
+    <div id="dashboard" class="screen">
+        <div class="menu">
+            <span class="hamburger" onclick="toggleMenu()">☰ Menu</span>
+            <div class="menu-dropdown" id="menuDropdown2">
+                <a href="#" onclick="showKanban()">Kanban</a>
+                <a href="#">Configuração</a>
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+        </div>
+        <div class="dashboard">
+            <h1>Dashboard de KPIs</h1>
+            <div class="kpi-cards">
+                <div class="kpi-card"><h3>Total de Leads</h3><p>40</p></div>
+                <div class="kpi-card"><h3>Taxa de Conversão</h3><p>25%</p></div>
+                <div class="kpi-card"><h3>Leads Agendados</h3><p>5</p></div>
+                <div class="kpi-card"><h3>Leads Faltosos</h3><p>5</p></div>
+            </div>
+            <div class="charts">
+                <div class="chart"><canvas id="serviceChart"></canvas></div>
+                <div class="chart"><canvas id="statusChart"></canvas></div>
+                <div class="chart"><canvas id="evolutionChart"></canvas></div>
+            </div>
+            <button onclick="showKanban()">Voltar para Kanban</button>
+        </div>
+    </div>
+    <script>
+        const leads = [
+            { name: 'João Silva', service: 'Implantes', score: 85, date: '2023-10-01' },
+            { name: 'Maria Santos', service: 'Invisalign', score: 92, date: '2023-10-02' },
+            { name: 'Pedro Costa', service: 'Clínico', score: 78, date: '2023-10-03' },
+            { name: 'Ana Oliveira', service: 'Implantes', score: 88, date: '2023-10-04' },
+            { name: 'Carlos Mendes', service: 'Implantes', score: 95, date: '2023-10-05' },
+            { name: 'Luana Ferreira', service: 'Invisalign', score: 80, date: '2023-10-06' },
+            { name: 'Roberto Lima', service: 'Implantes', score: 70, date: '2023-10-07' },
+            { name: 'Fernanda Alves', service: 'Clínico', score: 65, date: '2023-10-01' },
+            { name: 'Gustavo Pereira', service: 'Implantes', score: 90, date: '2023-10-02' },
+            { name: 'Beatriz Rocha', service: 'Implantes', score: 75, date: '2023-10-03' },
+            { name: 'Diego Nunes', service: 'Invisalign', score: 85, date: '2023-10-04' },
+            { name: 'Carla Souza', service: 'Implantes', score: 82, date: '2023-10-05' },
+            { name: 'Eduardo Silva', service: 'Clínico', score: 60, date: '2023-10-06' },
+            { name: 'Helena Costa', service: 'Implantes', score: 88, date: '2023-10-07' },
+            { name: 'Igor Oliveira', service: 'Implantes', score: 93, date: '2023-10-01' },
+            { name: 'Julia Mendes', service: 'Invisalign', score: 77, date: '2023-10-02' },
+            { name: 'Kleber Ferreira', service: 'Implantes', score: 68, date: '2023-10-03' },
+            { name: 'Laura Lima', service: 'Implantes', score: 91, date: '2023-10-04' },
+            { name: 'Marcos Alves', service: 'Clínico', score: 55, date: '2023-10-05' },
+            { name: 'Natalia Pereira', service: 'Implantes', score: 84, date: '2023-10-06' },
+            { name: 'Otávio Rocha', service: 'Implantes', score: 79, date: '2023-10-07' },
+            { name: 'Paula Nunes', service: 'Invisalign', score: 86, date: '2023-10-01' },
+            { name: 'Quintino Souza', service: 'Implantes', score: 72, date: '2023-10-02' },
+            { name: 'Rita Silva', service: 'Implantes', score: 89, date: '2023-10-03' },
+            { name: 'Sergio Costa', service: 'Clínico', score: 50, date: '2023-10-04' },
+            { name: 'Tatiana Oliveira', service: 'Implantes', score: 94, date: '2023-10-05' },
+            { name: 'Ulisses Mendes', service: 'Implantes', score: 81, date: '2023-10-06' },
+            { name: 'Vanessa Ferreira', service: 'Invisalign', score: 83, date: '2023-10-07' },
+            { name: 'Wagner Lima', service: 'Implantes', score: 76, date: '2023-10-01' },
+            { name: 'Xuxa Alves', service: 'Implantes', score: 87, date: '2023-10-02' },
+            { name: 'Yuri Pereira', service: 'Clínico', score: 45, date: '2023-10-03' },
+            { name: 'Zara Rocha', service: 'Implantes', score: 96, date: '2023-10-04' },
+            { name: 'André Nunes', service: 'Implantes', score: 74, date: '2023-10-05' },
+            { name: 'Bianca Souza', service: 'Invisalign', score: 78, date: '2023-10-06' },
+            { name: 'César Silva', service: 'Implantes', score: 92, date: '2023-10-07' },
+            { name: 'Diana Costa', service: 'Implantes', score: 69, date: '2023-10-01' },
+            { name: 'Elisa Oliveira', service: 'Clínico', score: 58, date: '2023-10-02' },
+            { name: 'Fabio Mendes', service: 'Implantes', score: 85, date: '2023-10-03' },
+            { name: 'Gabriela Ferreira', service: 'Implantes', score: 80, date: '2023-10-04' },
+            { name: 'Henrique Lima', service: 'Invisalign', score: 90, date: '2023-10-05' }
+        ];
+        const columns = ['LEADS NOVOS', 'LEADS EM TRATAMENTO (CANAL 1)', 'LEADS EM TRATAMENTO (CANAL 2)', 'AGENDADO', 'FALTOU', 'REAGENDADO', 'RELACIONAMENTO', 'ARQUIVO'];
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            if (username === 'admin' && password === 'admin') {
+                showScreen('kanban');
+                loadKanban();
+            } else {
+                alert('Credenciais inválidas');
+            }
+        });
+        function toggleMenu() {
+            const dropdown = document.querySelector('.menu-dropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+        function showDashboard() {
+            showScreen('dashboard');
+            loadCharts();
+        }
+        function showKanban() {
+            showScreen('kanban');
+        }
+        function logout() {
+            showScreen('login');
+        }
+        function loadKanban() {
+            const board = document.getElementById('kanbanBoard');
+            board.innerHTML = '';
+            columns.forEach((col, index) => {
+                const columnDiv = document.createElement('div');
+                columnDiv.className = 'column';
+                columnDiv.innerHTML = `<h3>${col}</h3>`;
+                const start = index * 5;
+                const end = start + 5;
+                leads.slice(start, end).forEach(lead => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.draggable = true;
+                    card.innerHTML = `<strong>${lead.name}</strong><br>Serviço: ${lead.service}<br>Score: ${lead.score}<br>Data: ${lead.date}`;
+                    card.addEventListener('dragstart', dragStart);
+                    columnDiv.appendChild(card);
+                });
+                columnDiv.addEventListener('dragover', dragOver);
+                columnDiv.addEventListener('drop', drop);
+                board.appendChild(columnDiv);
+            });
+        }
+        let draggedElement;
+        function dragStart(e) {
+            draggedElement = e.target;
+        }
+        function dragOver(e) {
+            e.preventDefault();
+        }
+        function drop(e) {
+            e.preventDefault();
+            if (e.target.classList.contains('column')) {
+                e.target.appendChild(draggedElement);
+            }
+        }
+        function loadCharts() {
+            // Service Pie Chart
+            new Chart(document.getElementById('serviceChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Implantes', 'Invisalign', 'Clínico'],
+                    datasets: [{
+                        data: [28, 8, 4],
+                        backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe']
+                    }]
+                },
+                options: {
+                    title: { display: true, text: 'Distribuição por Serviço' }
+                }
+            });
+            // Status Bar Chart
+            new Chart(document.getElementById('statusChart'), {
+                type: 'bar',
+                data: {
+                    labels: columns,
+                    datasets: [{
+                        label: 'Leads',
+                        data: [5, 5, 5, 5, 5, 5, 5, 5],
+                        backgroundColor: '#36a2eb'
+                    }]
+                },
+                options: {
+                    title: { display: true, text: 'Leads por Status' }
+                }
+            });
+            // Evolution Line Chart
+            new Chart(document.getElementById('evolutionChart'), {
+                type: 'line',
+                data: {
+                    labels: ['2023-10-01', '2023-10-02', '2023-10-03', '2023-10-04', '2023-10-05', '2023-10-06', '2023-10-07'],
+                    datasets: [{
+                        label: 'Leads',
+                        data: [6, 5, 7, 4, 8, 5, 5],
+                        borderColor: '#ff6384',
+                        fill: false
+                    }]
+                },
+                options: {
+                    title: { display: true, text: 'Evolução de Leads por Dia' }
+                }
+            });
+        }
+    </script>
 </body>
 </html>
